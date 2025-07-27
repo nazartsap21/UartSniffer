@@ -31,7 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAX_MESSAGES 64
+#define MAX_MESSAGES 128
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -119,7 +119,7 @@ typedef enum
 
 
 typedef struct {
-  uint8_t  message[64];
+  uint8_t  message[32];
   uint8_t  length;
   uint8_t  line;
   uint32_t timestamp;
@@ -178,7 +178,7 @@ void print_all_received_messages(void)
     sprintf(linebuf, "UART%d: ", received_data[i].line == SNIFFER_BUFFER_1 ? 1 : 3);
     HAL_UART_Transmit(&huart2, (uint8_t *)linebuf, strlen(linebuf), 100);
     HAL_UART_Transmit(&huart2, received_data[i].message, received_data[i].length, 100);
-    HAL_UART_Transmit(&huart2, (uint8_t *)"\r\n", 2, 100);
+    HAL_UART_Transmit(&huart2, (uint8_t *)"\n\r", 2, 100);
   }
 
   message_index = 0;
@@ -195,7 +195,8 @@ void handle_receive(uint8_t buffer_byte, uint8_t buffer_id)
 
   temp_buffer[temp_index++] = buffer_byte;
 
-  if (temp_index >= 64) {
+  if (temp_index >= 64)
+  {
     temp_index = 0;
     return;
   }
@@ -222,7 +223,8 @@ void handle_receive(uint8_t buffer_byte, uint8_t buffer_id)
       break;
   }
 
-  if (is_end) {
+  if (is_end)
+  {
     memcpy(received_data[message_index].message, temp_buffer, temp_index);
     received_data[message_index].length    = temp_index;
     received_data[message_index].line      = buffer_id;
@@ -623,6 +625,7 @@ void Task1_App(void *argument)
         HAL_UART_DMAStop(&huart1);
         HAL_UART_DMAStop(&huart3);
         HAL_UART_Transmit_IT(&huart2, (uint8_t *)"Sniffing OFF\r\n", 14);
+        osDelay(2);
         print_all_received_messages();
       }
 
